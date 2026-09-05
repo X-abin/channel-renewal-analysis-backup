@@ -24,7 +24,7 @@ function setData(data, demo = false, statusText = '') { state.channels = data.ch
 function selectedAnalysis() { const c = state.channels.find(c => Number(c.id) === Number(state.selectedId)) || state.channels[0]; return c && state.hasLogs ? analyze(c, state.logs) : null; }
 function channelName(c) { return String(c.name || c.channel_name || c.title || `渠道 ${c.id}`); }
 const pinyinInitials = 'ABCDEFGHJKLMNOPQRSTWXYZ';
-const pinyinBoundaries = [0xB0A1, 0xB0C5, 0xB2C1, 0xB4EE, 0xB6EA, 0xB7A2, 0xB8C1, 0xB9FE, 0xBBF7, 0xBFA6, 0xC0AC, 0xC2E8, 0xC4C3, 0xC5B6, 0xC5BE, 0xC6DA, 0xC8BB, 0xC8F6, 0xCBFA, 0xCDDA, 0xCEF4, 0xD1B9, 0xD4D1, 0xD7FA];
+const pinyinBoundaries = [0xB0A1, 0xB0C5, 0xB2C1, 0xB4EE, 0xB6EA, 0xB7A2, 0xB8C1, 0xB9FE, 0xBBF7, 0xBFA6, 0xC0AC, 0xC2E8, 0xC4C3, 0xC5B6, 0xC5BE, 0xC6DA, 0xC8BB, 0xC8F6, 0xCBFA, 0xCDDA, 0xCEF4, 0xD1B9, 0xD4D1];
 function pinyinInitial(char) { const code = char.charCodeAt(0); if (code < 0xB0A1 || code > 0xD7F9) return ''; let low = 0, high = pinyinBoundaries.length - 1; while (low <= high) { const mid = (low + high) >> 1; if (code >= pinyinBoundaries[mid]) low = mid + 1; else high = mid - 1; } return pinyinInitials[Math.max(0, high)] || ''; }
 function channelInitial(c) { const text = channelName(c).trim(); const match = text.match(/[A-Za-z]/); if (match) return match[0].toUpperCase(); return pinyinInitial(text.charAt(0)) || text.charAt(0).toUpperCase(); }
 function channelMatches(c, query) { if (!query) return true; const name = channelName(c).toLocaleLowerCase(); const initial = channelInitial(c).toLocaleLowerCase(); const q = query.toLocaleLowerCase(); if (name.includes(q) || String(c.id).includes(q)) return true; return q.length === 1 && /^[a-z]$/.test(q) && initial === q; }
