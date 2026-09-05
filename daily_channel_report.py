@@ -571,8 +571,8 @@ def notion_create_page(payload, token, database_id):
             item.get('quota_per_success') if item.get('quota_per_success') is not None else u'暂无',
             item.get('anomaly_count', 0))
         children.append({'object': 'block', 'type': 'paragraph', 'paragraph': {'rich_text': notion_rich_text(details)}})
-    body = json.dumps({'parent': {'database_id': database_id.replace('-', '')}, 'properties': {u'名称': {'title': [{'text': {'content': u'渠道续费日报｜%s' % report_date}}]}}, 'children': children}, ensure_ascii=False).encode('utf-8')
-    command = ['/usr/bin/curl', '-sS', '--max-time', '45', '-X', 'POST', 'https://api.notion.com/v1/pages', '-H', 'Authorization: Bearer %s' % token, '-H', 'Notion-Version: 2022-06-28', '-H', 'Content-Type: application/json']
+    body = json.dumps({'parent': {'database_id': database_id.replace('-', '')}, 'properties': {u'名称': {'title': [{'text': {'content': u'渠道续费日报｜%s' % report_date}}]}}}, ensure_ascii=False).encode('utf-8')
+    command = ['/usr/bin/curl', '-sS', '--max-time', '45', '-X', 'POST', 'https://api.notion.com/v1/pages', '-H', 'Authorization: Bearer %s' % token, '-H', 'Notion-Version: 2022-06-28', '-H', 'Content-Type: application/json', '--data-binary', '@-']
     process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output = process.communicate(body)[0]
     if process.returncode:
@@ -580,7 +580,17 @@ def notion_create_page(payload, token, database_id):
     response = json.loads(output.decode('utf-8'))
     if response.get('object') != 'page':
         raise RuntimeError('Notion create page failed: %s' % response)
-    return response.get('url') or response.get('id')
+    page_id = response.get('id')
+    children_body = json.dumps({'children': children}, ensure_ascii=False).encode('utf-8')
+    children_command = ['/usr/bin/curl', '-sS', '--max-time', '45', '-X', 'PATCH', 'https://api.notion.com/v1/blocks/%s/children' % page_id, '-H', 'Authorization: Bearer %s' % token, '-H', 'Notion-Version: 2022-06-28', '-H', 'Content-Type: application/json', '--data-binary', '@-']
+    children_process = subprocess.Popen(children_command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    children_output = children_process.communicate(children_body)[0]
+    if children_process.returncode:
+        raise RuntimeError('Notion blocks request failed: %s' % children_output.decode('utf-8', 'replace')[:500])
+    children_response = json.loads(children_output.decode('utf-8'))
+    if children_response.get('object') != 'list':
+        raise RuntimeError('Notion append blocks failed: %s' % children_response)
+    return response.get('url') or page_id
 
 
 def main():
