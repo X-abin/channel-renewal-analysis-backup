@@ -24,7 +24,7 @@
       <section class="input-panel panel">
         <div class="section-title-row"><div><h2>渠道数据拉取</h2><p>先拉取渠道列表，再选择要评估的渠道并拉取其日志。只会分析当前选中的渠道。</p></div><div class="toolbar"><button class="ghost-button" id="fillDemo">查看示例</button><button class="primary-button" id="startAnalysis">开始分析</button><button class="danger-button" id="clearData">清空</button></div></div>
         <div class="filter-grid">
-          <div class="filter-field channel-picker"><label for="channelSearch">快速搜索渠道</label><input id="channelSearch" type="search" placeholder="输入首字母或渠道名称，例如 B" autocomplete="off" /></div>
+          <div class="filter-field channel-picker"><label for="channelSearch">快速搜索渠道</label><input id="channelSearch" type="search" placeholder="输入首字母或渠道名称，例如 B" autocomplete="off" /><div id="channelSuggestions" class="channel-suggestions" role="listbox"></div></div>
           <div class="filter-field channel-picker"><label for="channelSelect">渠道选择</label><select id="channelSelect"></select></div>
           <div class="filter-field"><label for="startDate">开始日期</label><input id="startDate" type="date" /></div>
           <div class="filter-field"><label for="endDate">结束日期</label><input id="endDate" type="date" /></div>
