@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>渠道续费价值分析</title>
-    <link rel="stylesheet" href="./styles.css?v=20260905b" />
+    <link rel="stylesheet" href="./styles.css?v=20260905c" />
   </head>
   <body>
     <main class="page-shell">
@@ -24,6 +24,7 @@
       <section class="input-panel panel">
         <div class="section-title-row"><div><h2>渠道数据拉取</h2><p>先拉取渠道列表，再选择要评估的渠道并拉取其日志。只会分析当前选中的渠道。</p></div><div class="toolbar"><button class="ghost-button" id="fillDemo">查看示例</button><button class="primary-button" id="startAnalysis">开始分析</button><button class="danger-button" id="clearData">清空</button></div></div>
         <div class="filter-grid">
+          <div class="filter-field channel-picker"><label for="channelSearch">快速搜索渠道</label><input id="channelSearch" type="search" placeholder="输入首字母或渠道名称，例如 B" autocomplete="off" /></div>
           <div class="filter-field channel-picker"><label for="channelSelect">渠道选择</label><select id="channelSelect"></select></div>
           <div class="filter-field"><label for="startDate">开始日期</label><input id="startDate" type="date" /></div>
           <div class="filter-field"><label for="endDate">结束日期</label><input id="endDate" type="date" /></div>
@@ -55,6 +56,6 @@
       <section class="panel daily-panel"><div class="section-title-row"><div><h2>日报推送</h2><p>每天 12 点后生成前一天渠道效果摘要。当前支持浏览器本地提醒、复制和下载。</p></div><div class="daily-actions"><input id="reportDate" type="date" /><label class="switch"><input id="dailyToggle" type="checkbox" /><span></span></label><span>启用提醒</span><button class="ghost-button" id="copyReport">复制日报</button><button class="primary-button" id="downloadReport">下载 .txt</button></div></div><div id="reportPreview" class="report-preview"></div></section>
     </main>
     <div class="toast" id="toast" role="status"></div>
-    <script src="./app.js?v=20260905b"></script>
+    <script src="./app.js?v=20260905c"></script>
   </body>
 </html>
