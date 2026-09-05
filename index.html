@@ -12,8 +12,8 @@
         <div class="hero panel">
           <p class="eyebrow">NEWAPI CHANNEL RENEWAL ANALYSIS</p>
           <h1>渠道续费价值分析</h1>
-          <p class="hero-copy">贴入 <code>/api/channel/</code> 和 <code>/api/log/</code> 的返回 JSON，按成功率、错误率、平均响应时间、额度消耗、模型分布、请求趋势和异常请求综合评估某个渠道是否值得继续续费或复充。</p>
-          <div class="hero-tags"><span>输入 两个接口返回</span><span>输出 指标、图表、建议</span><span>依据 docs 里的 data.items[]</span></div>
+          <p class="hero-copy">连接 NewAPI 后先拉取渠道列表，再选择一个渠道进行分析。系统会基于成功率、错误率、平均响应时间、额度消耗、模型分布、请求趋势和异常请求给出续费或复充建议。</p>
+          <div class="hero-tags"><span>拉取渠道列表</span><span>选择单个渠道分析</span><span>输出指标、图表与建议</span></div>
         </div>
         <div class="score-card panel">
           <div class="score-ring" id="scoreRing"><div><strong id="scoreValue">0</strong><span id="scoreVerdict">等待分析</span></div></div>
@@ -22,11 +22,7 @@
       </section>
 
       <section class="input-panel panel">
-        <div class="section-title-row"><div><h2>数据输入</h2><p>支持完整响应对象、<code>data.items</code> 或直接数组。粘贴渠道 JSON 后即可选择渠道。</p></div><div class="toolbar"><button class="ghost-button" id="fillDemo">填充示例</button><button class="primary-button" id="startAnalysis">开始分析</button><button class="danger-button" id="clearData">清空</button></div></div>
-        <div class="json-grid">
-          <div class="json-field"><label for="channelJson">/api/channel/ 返回 JSON</label><textarea id="channelJson" spellcheck="false" placeholder="粘贴渠道接口返回的 JSON"></textarea><div class="file-row"><input id="channelFile" type="file" accept=".json,application/json" /></div></div>
-          <div class="json-field"><label for="logJson">/api/log/ 返回 JSON</label><textarea id="logJson" spellcheck="false" placeholder="粘贴日志接口返回的 JSON"></textarea><div class="file-row"><input id="logFile" type="file" accept=".json,application/json" /></div></div>
-        </div>
+        <div class="section-title-row"><div><h2>渠道数据拉取</h2><p>先拉取渠道列表，再选择要评估的渠道并拉取其日志。只会分析当前选中的渠道。</p></div><div class="toolbar"><button class="ghost-button" id="fillDemo">查看示例</button><button class="primary-button" id="startAnalysis">开始分析</button><button class="danger-button" id="clearData">清空</button></div></div>
         <div class="filter-grid">
           <div class="filter-field channel-picker"><label for="channelSelect">渠道选择</label><select id="channelSelect"></select></div>
           <div class="filter-field"><label for="startDate">开始日期</label><input id="startDate" type="date" /></div>
@@ -37,7 +33,7 @@
           <div class="filter-field"><label for="baseUrl">NewAPI 地址</label><input id="baseUrl" value="https://maolaoapi.com" /></div>
           <div class="filter-field"><label for="authorization">Authorization Bearer Token</label><input id="authorization" type="password" placeholder="sk-... 或 Bearer sk-..." /></div>
           <div class="filter-field"><label for="userId">用户 ID（可选）</label><input id="userId" placeholder="1" /></div>
-          <button class="primary-button connection-button" id="loadData">拉取真实数据</button>
+          <button class="primary-button connection-button" id="loadData">拉取渠道</button>
         </div>
         <div class="data-status" id="dataStatus">当前使用演示数据 · 已识别 <strong>0</strong> 个渠道</div>
       </section>
