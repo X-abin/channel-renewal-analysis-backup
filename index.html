@@ -7,120 +7,57 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <div class="app-shell">
-      <header class="topbar">
-        <div class="brand">
-          <div class="brand-mark">C</div>
-          <div>
-            <div class="brand-title">渠道续费价值分析</div>
-            <div class="brand-subtitle">NewAPI Channel Intelligence</div>
-          </div>
+    <main class="page-shell">
+      <section class="top-grid">
+        <div class="hero panel">
+          <p class="eyebrow">NEWAPI CHANNEL RENEWAL ANALYSIS</p>
+          <h1>渠道续费价值分析</h1>
+          <p class="hero-copy">贴入 <code>/api/channel/</code> 和 <code>/api/log/</code> 的返回 JSON，按成功率、错误率、平均响应时间、额度消耗、模型分布、请求趋势和异常请求综合评估某个渠道是否值得继续续费或复充。</p>
+          <div class="hero-tags"><span>输入 两个接口返回</span><span>输出 指标、图表、建议</span><span>依据 docs 里的 data.items[]</span></div>
         </div>
-        <div class="topbar-actions">
-          <span class="status-dot" id="dataStatusDot"></span>
-          <span id="dataStatusText">演示数据</span>
-          <button class="icon-button" id="themeToggle" title="切换显示模式" aria-label="切换显示模式">◐</button>
+        <div class="score-card panel">
+          <div class="score-ring" id="scoreRing"><div><strong id="scoreValue">0</strong><span id="scoreVerdict">等待分析</span></div></div>
+          <p id="scoreCaption">请选择渠道并开始分析</p>
         </div>
-      </header>
+      </section>
 
-      <main class="main-content">
-        <section class="hero-row">
-          <div>
-            <p class="eyebrow">CHANNEL DECISION CENTER</p>
-            <h1>把渠道表现，变成续费决策</h1>
-            <p class="hero-text">基于 <code>/api/channel/</code> 与 <code>/api/log/</code> 的可追溯分析，快速识别值得复充的渠道、隐性成本和异常请求。</p>
-          </div>
-          <div class="hero-meta">
-            <span class="meta-label">数据窗口</span>
-            <strong id="windowLabel">最近 7 天</strong>
-            <span class="meta-muted" id="lastUpdated">刚刚更新</span>
-          </div>
-        </section>
+      <section class="input-panel panel">
+        <div class="section-title-row"><div><h2>数据输入</h2><p>支持完整响应对象、<code>data.items</code> 或直接数组。粘贴渠道 JSON 后即可选择渠道。</p></div><div class="toolbar"><button class="ghost-button" id="fillDemo">填充示例</button><button class="primary-button" id="startAnalysis">开始分析</button><button class="danger-button" id="clearData">清空</button></div></div>
+        <div class="json-grid">
+          <div class="json-field"><label for="channelJson">/api/channel/ 返回 JSON</label><textarea id="channelJson" spellcheck="false" placeholder="粘贴渠道接口返回的 JSON"></textarea><div class="file-row"><input id="channelFile" type="file" accept=".json,application/json" /></div></div>
+          <div class="json-field"><label for="logJson">/api/log/ 返回 JSON</label><textarea id="logJson" spellcheck="false" placeholder="粘贴日志接口返回的 JSON"></textarea><div class="file-row"><input id="logFile" type="file" accept=".json,application/json" /></div></div>
+        </div>
+        <div class="filter-grid">
+          <div class="filter-field channel-picker"><label for="channelSelect">渠道选择</label><select id="channelSelect"></select></div>
+          <div class="filter-field"><label for="startDate">开始日期</label><input id="startDate" type="date" /></div>
+          <div class="filter-field"><label for="endDate">结束日期</label><input id="endDate" type="date" /></div>
+          <div class="filter-field"><label for="analysisPath">分析口径</label><select id="analysisPath"><option value="consumption-error">只看消费与错误日志</option><option value="all">全部日志</option></select></div>
+        </div>
+        <div class="connection-row">
+          <div class="filter-field"><label for="baseUrl">NewAPI 地址</label><input id="baseUrl" value="https://maolaoapi.com" /></div>
+          <div class="filter-field"><label for="authorization">Authorization Bearer Token</label><input id="authorization" type="password" placeholder="sk-... 或 Bearer sk-..." /></div>
+          <div class="filter-field"><label for="userId">用户 ID（可选）</label><input id="userId" placeholder="1" /></div>
+          <button class="primary-button connection-button" id="loadData">拉取真实数据</button>
+        </div>
+        <div class="data-status" id="dataStatus">当前使用演示数据 · 已识别 <strong>0</strong> 个渠道</div>
+      </section>
 
-        <section class="control-bar panel">
-          <div class="control-group api-group">
-            <label for="baseUrl">NewAPI 地址</label>
-            <input id="baseUrl" value="https://maolaoapi.com" placeholder="https://your-newapi.example.com" />
-          </div>
-          <div class="control-group compact-control">
-            <label for="userId">用户 ID</label>
-            <input id="userId" placeholder="1" />
-          </div>
-          <div class="control-group auth-control">
-            <label for="authorization">Authorization Bearer Token</label>
-            <input id="authorization" type="password" placeholder="sk-... 或 Bearer sk-..." />
-          </div>
-          <div class="control-group cookie-control">
-            <label for="cookie">Cookie（旧版兼容，可选）</label>
-            <input id="cookie" type="password" placeholder="session=..." />
-          </div>
-          <div class="control-group compact-control">
-            <label for="days">分析天数</label>
-            <select id="days">
-              <option value="3">3 天</option>
-              <option value="7" selected>7 天</option>
-              <option value="14">14 天</option>
-              <option value="30">30 天</option>
-            </select>
-          </div>
-          <button class="primary-button" id="loadData"><span>↻</span> 拉取数据</button>
-          <button class="secondary-button" id="demoData">使用演示数据</button>
-        </section>
+      <section class="metric-grid" id="metricGrid"></section>
 
-        <section class="workspace-grid">
-          <aside class="sidebar-panel panel">
-            <div class="panel-heading">
-              <div>
-                <p class="eyebrow">CHANNELS</p>
-                <h2>渠道列表</h2>
-              </div>
-              <span class="count-badge" id="channelCount">0</span>
-            </div>
-            <div class="channel-search"><span>⌕</span><input id="channelSearch" placeholder="搜索渠道" /></div>
-            <div class="channel-list" id="channelList"></div>
-            <div class="sidebar-note"><span class="note-icon">i</span><span>评分由成功率、错误率、响应时间、消耗效率、模型覆盖与趋势共同决定。</span></div>
-          </aside>
+      <section class="content-grid">
+        <div class="left-column">
+          <section class="panel chart-panel large-chart"><div class="section-title-row"><div><h2>请求量趋势</h2><p>按天拆分成功请求与错误请求，观察这个渠道的活跃度和波动情况。</p></div><span class="chart-period" id="trendPeriod">最近 7 天</span></div><div id="trendChart" class="chart-area"></div></section>
+          <section class="panel chart-panel large-chart"><div class="section-title-row"><div><h2>平均响应时间趋势</h2><p>对比每日平均耗时、P95 耗时和渠道接口的基线响应时间。</p></div></div><div id="responseChart" class="chart-area"></div></section>
+        </div>
+        <div class="right-column">
+          <section class="panel conclusion-panel"><div class="section-title-row"><div><h2>最终结论</h2><p>综合上述指标，给出明确的续费建议。</p></div></div><div id="conclusion" class="conclusion-box"></div></section>
+          <section class="panel side-panel"><h2>模型使用分布</h2><p>看这个渠道主要承载哪些模型，以及是否过度集中在单一模型上。</p><div id="modelChart" class="model-chart"></div></section>
+          <section class="panel side-panel anomaly-panel"><div class="section-title-row"><div><h2>异常请求</h2><p>展示错误、超时、限流和耗时异常的请求样本。</p></div><span class="count-badge" id="anomalyCount">0</span></div><div class="table-wrap"><table><thead><tr><th>时间</th><th>模型</th><th>request_id</th><th>耗时</th><th>额度</th><th>异常原因</th><th>内容</th></tr></thead><tbody id="anomalyTable"></tbody></table></div></section>
+        </div>
+      </section>
 
-          <section class="analysis-area">
-            <div class="summary-grid" id="summaryGrid"></div>
-
-            <div class="decision-panel panel" id="decisionPanel"></div>
-
-            <div class="charts-grid">
-              <section class="panel chart-panel chart-wide">
-                <div class="panel-heading chart-heading">
-                  <div><p class="eyebrow">REQUEST TREND</p><h2>请求量与成功率趋势</h2></div>
-                  <div class="legend"><span><i class="legend-dot blue"></i>请求量</span><span><i class="legend-dot green"></i>成功率</span></div>
-                </div>
-                <div class="chart-wrap" id="trendChart"></div>
-              </section>
-              <section class="panel chart-panel">
-                <div class="panel-heading chart-heading"><div><p class="eyebrow">MODEL MIX</p><h2>模型使用分布</h2></div></div>
-                <div class="donut-layout"><div class="donut" id="modelDonut"><div class="donut-center"><strong id="modelTotal">0</strong><span>请求</span></div></div><div class="legend-list" id="modelLegend"></div></div>
-              </section>
-              <section class="panel chart-panel">
-                <div class="panel-heading chart-heading"><div><p class="eyebrow">COST EFFICIENCY</p><h2>消耗与响应时间</h2></div></div>
-                <div class="bar-chart" id="costChart"></div>
-              </section>
-            </div>
-
-            <div class="bottom-grid">
-              <section class="panel table-panel">
-                <div class="panel-heading"><div><p class="eyebrow">ANOMALIES</p><h2>异常请求</h2></div><span class="count-badge warning" id="anomalyCount">0</span></div>
-                <div class="table-wrap"><table><thead><tr><th>时间</th><th>类型</th><th>模型</th><th>耗时</th><th>内容 / request_id</th></tr></thead><tbody id="anomalyTable"></tbody></table></div>
-              </section>
-              <section class="panel report-panel">
-                <div class="panel-heading"><div><p class="eyebrow">DAILY BRIEF</p><h2>日报推送</h2></div><span class="live-badge">LOCAL</span></div>
-                <div class="report-date-row"><label for="reportDate">日报日期</label><input id="reportDate" type="date" /></div>
-                <div class="report-toggle-row"><div><strong>12:00 自动提醒</strong><span>每天中午后生成前一天日报</span></div><label class="switch"><input id="dailyToggle" type="checkbox" /><span></span></label></div>
-                <div class="report-preview" id="reportPreview"></div>
-                <div class="report-actions"><button class="secondary-button" id="copyReport">复制日报</button><button class="primary-button" id="downloadReport">下载 .txt</button></div>
-              </section>
-            </div>
-          </section>
-        </section>
-      </main>
-    </div>
+      <section class="panel daily-panel"><div class="section-title-row"><div><h2>日报推送</h2><p>每天 12 点后生成前一天渠道效果摘要。当前支持浏览器本地提醒、复制和下载。</p></div><div class="daily-actions"><input id="reportDate" type="date" /><label class="switch"><input id="dailyToggle" type="checkbox" /><span></span></label><span>启用提醒</span><button class="ghost-button" id="copyReport">复制日报</button><button class="primary-button" id="downloadReport">下载 .txt</button></div></div><div id="reportPreview" class="report-preview"></div></section>
+    </main>
     <div class="toast" id="toast" role="status"></div>
     <script src="./app.js"></script>
   </body>
