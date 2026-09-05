@@ -46,8 +46,12 @@
             <label for="userId">用户 ID</label>
             <input id="userId" placeholder="1" />
           </div>
+          <div class="control-group auth-control">
+            <label for="authorization">Authorization Bearer Token</label>
+            <input id="authorization" type="password" placeholder="sk-... 或 Bearer sk-..." />
+          </div>
           <div class="control-group cookie-control">
-            <label for="cookie">Cookie（同域部署时可选）</label>
+            <label for="cookie">Cookie（旧版兼容，可选）</label>
             <input id="cookie" type="password" placeholder="session=..." />
           </div>
           <div class="control-group compact-control">
