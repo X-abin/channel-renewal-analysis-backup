@@ -21,6 +21,10 @@ try:
     import Queue as queue
 except ImportError:
     import queue
+try:
+    from html import escape as html_escape
+except ImportError:
+    from cgi import escape as html_escape
 
 
 ROOT = os.environ.get('CHANNEL_ANALYSIS_ROOT', '/opt/channel-analysis')
@@ -480,7 +484,7 @@ def write_json_atomic(path, payload):
     os.rename(temporary, path)
 
 
-def telegram_text(payload):
+def telegram_messages(payload):
     summary = payload.get('summary') or {}
     lines = [
         u'渠道续费价值分析｜%s 日报' % payload.get('report_date', ''),
@@ -497,42 +501,63 @@ def telegram_text(payload):
         u'跳过异常渠道：%s' % len(payload.get('failed_channels', [])),
         u'',
     ]
+    summary_text = u'\n'.join(lines)
     priority = {u'建议更换渠道': 0, u'暂不续费': 1, u'谨慎续费': 2, u'建议续费': 3}
     channels = sorted(payload.get('channels', []), key=lambda item: (priority.get(item.get('recommendation'), 9), -float(item.get('score') or 0), item.get('name') or u''))
+    table_lines = [u'渠道                 分数  建议       请求量  成功率  平均响应']
+    table_lines.append(u'────────────────────────────────────────────────────')
     for item in channels:
         success = item.get('success_rate')
         success_text = ('%.1f%%' % (float(success) * 100)) if success is not None else u'暂无'
-        lines.append(u'%s｜%s分｜%s｜请求%s｜成功率%s｜平均%sms｜异常%s' % (
-            item.get('name') or (u'渠道 %s' % item.get('id')),
-            item.get('score', 0), item.get('recommendation') or u'暂无建议',
-            item.get('request_count', 0), success_text,
-            item.get('avg_latency') if item.get('avg_latency') is not None else u'暂无',
-            item.get('anomaly_count', 0),
+        name = item.get('name') or (u'渠道 %s' % item.get('id'))
+        name = name[:18]
+        recommendation = (item.get('recommendation') or u'暂无')[:6]
+        latency = item.get('avg_latency')
+        latency_text = ('%sms' % latency) if latency is not None else u'暂无'
+        table_lines.append(u'%-18s %5s  %-6s %6s  %6s  %s' % (
+            name, item.get('score', 0), recommendation,
+            item.get('request_count', 0), success_text, latency_text,
         ))
-    text = u'\n'.join(lines)
+    chunks = []
+    current = summary_text + u'\n<pre>'
+    for row in table_lines:
+        escaped = html_escape(row, quote=False)
+        if len(current) + len(escaped) + 6 > 3800 and current.endswith(u'<pre>') is False:
+            current += u'</pre>'
+            chunks.append(current)
+            current = u'<pre>'
+        current += escaped + u'\n'
+    current += u'</pre>'
     if payload.get('notion_url'):
-        text += u'\n\nNotion 日报：%s' % payload.get('notion_url')
-    return text[:3900] + (u'\n…其余渠道请查看日报文件。' if len(text) > 3900 else u'')
+        current += u'\nNotion 日报：%s' % payload.get('notion_url')
+    chunks.append(current)
+    return chunks
+
+
+def telegram_text(payload):
+    """Return the first Telegram message for backwards compatibility."""
+    return telegram_messages(payload)[0]
 
 
 def send_telegram(payload, bot_token, chat_id):
     if not bot_token or not chat_id:
         raise RuntimeError('TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID are required in daily.env')
-    message = telegram_text(payload).encode('utf-8')
-    command = [
-        '/usr/bin/curl', '-sS', '--max-time', '30', '-X', 'POST',
-        'https://api.telegram.org/bot%s/sendMessage' % bot_token,
-        '--data-urlencode', 'chat_id=%s' % chat_id,
-        '--data-urlencode', 'text=%s' % message,
-        '--data-urlencode', 'disable_web_page_preview=true',
-    ]
-    try:
-        output = subprocess.check_output(command, stderr=subprocess.STDOUT)
-        response = json.loads(output.decode('utf-8'))
-    except Exception as error:
-        raise RuntimeError('Telegram send failed: %s' % error)
-    if not response.get('ok'):
-        raise RuntimeError('Telegram send failed: %s' % response)
+    for message in telegram_messages(payload):
+        command = [
+            '/usr/bin/curl', '-sS', '--max-time', '30', '-X', 'POST',
+            'https://api.telegram.org/bot%s/sendMessage' % bot_token,
+            '--data-urlencode', 'chat_id=%s' % chat_id,
+            '--data-urlencode', 'text=%s' % message,
+            '--data-urlencode', 'parse_mode=HTML',
+            '--data-urlencode', 'disable_web_page_preview=true',
+        ]
+        try:
+            output = subprocess.check_output(command, stderr=subprocess.STDOUT)
+            response = json.loads(output.decode('utf-8'))
+        except Exception as error:
+            raise RuntimeError('Telegram send failed: %s' % error)
+        if not response.get('ok'):
+            raise RuntimeError('Telegram send failed: %s' % response)
 
 
 def notion_rich_text(text):
