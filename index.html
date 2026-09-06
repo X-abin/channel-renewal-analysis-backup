@@ -32,7 +32,7 @@
         </div>
         <div class="connection-row">
           <div class="filter-field"><label for="baseUrl">NewAPI 地址</label><input id="baseUrl" value="https://maolaoapi.com" /></div>
-          <div class="filter-field"><label for="authorization">Authorization Bearer Token</label><input id="authorization" type="password" placeholder="sk-... 或 Bearer sk-..." /></div>
+          <div class="filter-field"><label for="authorization">Authorization Bearer Token</label><input id="authorization" type="password" placeholder="sk-... 或 Bearer sk-..." /><div class="auth-actions"><label><input id="rememberAuthorization" type="checkbox" checked /> 记住此 Token</label><button type="button" class="link-button" id="clearAuthorization">清除本机保存</button></div></div>
           <div class="filter-field"><label for="userId">用户 ID（可选）</label><input id="userId" placeholder="1" /></div>
           <button class="primary-button connection-button" id="loadData">拉取渠道</button>
         </div>
