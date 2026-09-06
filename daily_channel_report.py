@@ -560,17 +560,60 @@ def notion_create_page(payload, token, database_id):
     ]
     priority = {u'建议更换渠道': 0, u'暂不续费': 1, u'谨慎续费': 2, u'建议续费': 3}
     channels = sorted(payload.get('channels', []), key=lambda item: (priority.get(item.get('recommendation'), 9), -float(item.get('score') or 0), item.get('name') or u''))
+    table_rows = [
+        {
+            'object': 'block',
+            'type': 'table_row',
+            'table_row': {
+                'cells': [
+                    notion_rich_text(u'渠道'),
+                    notion_rich_text(u'评分'),
+                    notion_rich_text(u'建议'),
+                    notion_rich_text(u'请求量'),
+                    notion_rich_text(u'成功率'),
+                    notion_rich_text(u'平均响应'),
+                    notion_rich_text(u'P95'),
+                    notion_rich_text(u'额度/成功'),
+                    notion_rich_text(u'异常'),
+                ]
+            }
+        }
+    ]
     for item in channels:
         success = item.get('success_rate')
         item_success = ('%.1f%%' % (float(success) * 100)) if success is not None else u'暂无'
-        details = u'%s｜评分 %s｜%s｜请求 %s｜成功率 %s｜平均响应 %sms｜P95 %sms｜额度/成功 %s｜异常 %s' % (
-            item.get('name') or (u'渠道 %s' % item.get('id')), item.get('score', 0),
-            item.get('recommendation') or u'暂无建议', item.get('request_count', 0), item_success,
-            item.get('avg_latency') if item.get('avg_latency') is not None else u'暂无',
-            item.get('p95_latency') if item.get('p95_latency') is not None else u'暂无',
-            item.get('quota_per_success') if item.get('quota_per_success') is not None else u'暂无',
-            item.get('anomaly_count', 0))
-        children.append({'object': 'block', 'type': 'paragraph', 'paragraph': {'rich_text': notion_rich_text(details)}})
+        name = item.get('name') or (u'渠道 %s' % item.get('id'))
+        channel_label = u'%s (#%s)' % (name, item.get('id')) if item.get('id') is not None else name
+        average_latency = u'%sms' % item.get('avg_latency') if item.get('avg_latency') is not None else u'暂无'
+        p95_latency = u'%sms' % item.get('p95_latency') if item.get('p95_latency') is not None else u'暂无'
+        quota_per_success = item.get('quota_per_success') if item.get('quota_per_success') is not None else u'暂无'
+        table_rows.append({
+            'object': 'block',
+            'type': 'table_row',
+            'table_row': {
+                'cells': [
+                    notion_rich_text(channel_label),
+                    notion_rich_text(item.get('score', 0)),
+                    notion_rich_text(item.get('recommendation') or u'暂无建议'),
+                    notion_rich_text(item.get('request_count', 0)),
+                    notion_rich_text(item_success),
+                    notion_rich_text(average_latency),
+                    notion_rich_text(p95_latency),
+                    notion_rich_text(quota_per_success),
+                    notion_rich_text(item.get('anomaly_count', 0)),
+                ]
+            }
+        })
+    children.append({
+        'object': 'block',
+        'type': 'table',
+        'table': {
+            'table_width': 9,
+            'has_column_header': True,
+            'has_row_header': False,
+        },
+        'children': table_rows,
+    })
     body = json.dumps({'parent': {'database_id': database_id.replace('-', '')}, 'properties': {u'名称': {'title': [{'text': {'content': u'渠道续费日报｜%s' % report_date}}]}}}, ensure_ascii=False).encode('utf-8')
     command = ['/usr/bin/curl', '-sS', '--max-time', '45', '-X', 'POST', 'https://api.notion.com/v1/pages', '-H', 'Authorization: Bearer %s' % token, '-H', 'Notion-Version: 2022-06-28', '-H', 'Content-Type: application/json', '--data-binary', '@-']
     process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
