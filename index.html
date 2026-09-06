@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>渠道续费价值分析</title>
-    <link rel="stylesheet" href="./styles.css?v=20260905e" />
+    <link rel="stylesheet" href="./styles.css?v=20260906a" />
   </head>
   <body>
     <main class="page-shell">
@@ -53,9 +53,9 @@
         </div>
       </section>
 
-      <section class="panel daily-panel"><div class="section-title-row"><div><h2>日报推送</h2><p>每天 12 点后生成前一天渠道效果摘要。当前支持浏览器本地提醒、复制和下载。</p></div><div class="daily-actions"><input id="reportDate" type="date" /><label class="switch"><input id="dailyToggle" type="checkbox" /><span></span></label><span>启用提醒</span><button class="ghost-button" id="copyReport">复制日报</button><button class="primary-button" id="downloadReport">下载 .txt</button></div></div><div id="reportPreview" class="report-preview"></div></section>
+      <section class="panel daily-panel"><div class="section-title-row"><div><h2>渠道日报</h2><p>每天 12 点后自动生成前一天效果，网页端同步展示完整汇总和渠道明细。</p></div><div class="daily-actions"><input id="reportDate" type="date" /><button class="ghost-button" id="refreshReport">刷新日报</button><label class="switch"><input id="dailyToggle" type="checkbox" /><span></span></label><span>启用提醒</span><button class="ghost-button" id="copyReport">复制日报</button><button class="primary-button" id="downloadReport">下载 .txt</button></div></div><div id="reportPreview" class="report-preview">日报加载中…</div></section>
     </main>
     <div class="toast" id="toast" role="status"></div>
-    <script src="./app.js?v=20260905e"></script>
+    <script src="./app.js?v=20260906a"></script>
   </body>
 </html>
