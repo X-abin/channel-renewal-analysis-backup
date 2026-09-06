@@ -611,8 +611,8 @@ def notion_create_page(payload, token, database_id):
             'table_width': 9,
             'has_column_header': True,
             'has_row_header': False,
+            'children': table_rows,
         },
-        'children': table_rows,
     })
     body = json.dumps({'parent': {'database_id': database_id.replace('-', '')}, 'properties': {u'名称': {'title': [{'text': {'content': u'渠道续费日报｜%s' % report_date}}]}}}, ensure_ascii=False).encode('utf-8')
     command = ['/usr/bin/curl', '-sS', '--max-time', '45', '-X', 'POST', 'https://api.notion.com/v1/pages', '-H', 'Authorization: Bearer %s' % token, '-H', 'Notion-Version: 2022-06-28', '-H', 'Content-Type: application/json', '--data-binary', '@-']
