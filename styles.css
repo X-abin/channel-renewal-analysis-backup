@@ -11,6 +11,21 @@
 .auth-actions input[type=checkbox] { width:14px; height:14px; margin:0; accent-color:var(--blue); }
 .link-button { border:0; padding:0; background:transparent; color:var(--blue); font-size:11px; white-space:nowrap; }
 .link-button:hover { text-decoration:underline; }
+.report-overview { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px; margin-bottom:14px; }
+.report-stat { padding:10px 11px; background:#fff; border:1px solid #e7edf4; border-radius:8px; }
+.report-stat span { display:block; color:#8290a3; font-size:10px; }
+.report-stat strong { display:block; margin-top:4px; color:var(--ink); font-size:16px; }
+.report-heading { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:4px 0 8px; color:var(--ink); font-weight:800; }
+.report-meta { color:#8190a4; font-size:10px; font-weight:400; }
+.report-table-wrap { overflow:auto; border:1px solid #e7edf4; border-radius:8px; background:#fff; }
+.report-table { min-width:900px; font-size:10px; }
+.report-table th { padding:9px 8px; background:#f4f7fa; color:#718198; }
+.report-table td { padding:8px; white-space:nowrap; }
+.report-table .good { color:var(--green); font-weight:700; }
+.report-table .warn { color:var(--orange); font-weight:700; }
+.report-table .bad { color:var(--red); font-weight:700; }
+.report-empty { padding:18px 4px; color:#718198; }
+@media (max-width:680px) { .report-overview{grid-template-columns:repeat(2,1fr)} .report-stat:last-child{grid-column:span 2} .daily-actions{gap:7px} }
 @media (max-width:1100px) { .page-shell{width:min(100% - 30px,900px)} .top-grid{grid-template-columns:1fr}.score-card{min-height:300px}.metric-grid{grid-template-columns:repeat(3,1fr)} .content-grid{grid-template-columns:1fr}.right-column{grid-template-columns:1fr 1fr}.anomaly-panel{grid-column:1/-1} }
 @media (max-width:680px) { .page-shell{width:calc(100% - 20px);padding-top:12px}.hero{min-height:320px}.hero h1{font-size:28px;margin-bottom:28px}.eyebrow{margin-bottom:30px}.score-ring{width:220px;height:220px}.json-grid,.filter-grid,.connection-row,.right-column{grid-template-columns:1fr}.metric-grid{grid-template-columns:repeat(2,1fr)}.section-title-row{display:block}.toolbar,.daily-actions{margin-top:12px;justify-content:flex-start}.large-chart{min-height:300px}.chart-area{height:235px}.daily-actions input{width:140px} }
 .channel-picker { position:relative; }
