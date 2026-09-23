@@ -585,25 +585,24 @@ def notion_create_page(payload, token, database_id):
     ]
     priority = {u'建议更换渠道': 0, u'暂不续费': 1, u'谨慎续费': 2, u'建议续费': 3}
     channels = sorted(payload.get('channels', []), key=lambda item: (priority.get(item.get('recommendation'), 9), -float(item.get('score') or 0), item.get('name') or u''))
-    table_rows = [
-        {
-            'object': 'block',
-            'type': 'table_row',
-            'table_row': {
-                'cells': [
-                    notion_rich_text(u'渠道'),
-                    notion_rich_text(u'评分'),
-                    notion_rich_text(u'建议'),
-                    notion_rich_text(u'请求量'),
-                    notion_rich_text(u'成功率'),
-                    notion_rich_text(u'平均响应'),
-                    notion_rich_text(u'P95'),
-                    notion_rich_text(u'额度/成功'),
-                    notion_rich_text(u'异常'),
-                ]
-            }
+    header_row = {
+        'object': 'block',
+        'type': 'table_row',
+        'table_row': {
+            'cells': [
+                notion_rich_text(u'渠道'),
+                notion_rich_text(u'评分'),
+                notion_rich_text(u'建议'),
+                notion_rich_text(u'请求量'),
+                notion_rich_text(u'成功率'),
+                notion_rich_text(u'平均响应'),
+                notion_rich_text(u'P95'),
+                notion_rich_text(u'额度/成功'),
+                notion_rich_text(u'异常'),
+            ]
         }
-    ]
+    }
+    channel_rows = []
     for item in channels:
         success = item.get('success_rate')
         item_success = ('%.1f%%' % (float(success) * 100)) if success is not None else u'暂无'
@@ -612,7 +611,7 @@ def notion_create_page(payload, token, database_id):
         average_latency = u'%sms' % item.get('avg_latency') if item.get('avg_latency') is not None else u'暂无'
         p95_latency = u'%sms' % item.get('p95_latency') if item.get('p95_latency') is not None else u'暂无'
         quota_per_success = item.get('quota_per_success') if item.get('quota_per_success') is not None else u'暂无'
-        table_rows.append({
+        channel_rows.append({
             'object': 'block',
             'type': 'table_row',
             'table_row': {
@@ -629,16 +628,26 @@ def notion_create_page(payload, token, database_id):
                 ]
             }
         })
-    children.append({
-        'object': 'block',
-        'type': 'table',
-        'table': {
-            'table_width': 9,
-            'has_column_header': True,
-            'has_row_header': False,
-            'children': table_rows,
-        },
-    })
+    # Notion allows at most 100 children in one table, including the header row.
+    row_chunks = [channel_rows[index:index + 99] for index in range(0, len(channel_rows), 99)] or [[]]
+    for chunk_index, row_chunk in enumerate(row_chunks):
+        if chunk_index:
+            children.append({
+                'object': 'block',
+                'type': 'heading_3',
+                'heading_3': {'rich_text': notion_rich_text(
+                    u'渠道明细（第 %s/%s 页）' % (chunk_index + 1, len(row_chunks)))},
+            })
+        children.append({
+            'object': 'block',
+            'type': 'table',
+            'table': {
+                'table_width': 9,
+                'has_column_header': True,
+                'has_row_header': False,
+                'children': [header_row] + row_chunk,
+            },
+        })
     body = json.dumps({'parent': {'database_id': database_id.replace('-', '')}, 'properties': {u'名称': {'title': [{'text': {'content': u'渠道续费日报｜%s' % report_date}}]}}}, ensure_ascii=False).encode('utf-8')
     command = ['/usr/bin/curl', '-sS', '--max-time', '45', '-X', 'POST', 'https://api.notion.com/v1/pages', '-H', 'Authorization: Bearer %s' % token, '-H', 'Notion-Version: 2022-06-28', '-H', 'Content-Type: application/json', '--data-binary', '@-']
     process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -793,9 +802,14 @@ def main():
     latest_path = os.path.join(REPORT_DIR, 'latest.json')
     write_json_atomic(archive_path, payload)
     write_json_atomic(latest_path, payload)
-    notion_url = notion_create_page(payload, notion_token, notion_database_id)
-    payload['notion_url'] = notion_url
-    print('notion page created: %s' % notion_url)
+    try:
+        notion_url = notion_create_page(payload, notion_token, notion_database_id)
+        payload['notion_url'] = notion_url
+        write_json_atomic(archive_path, payload)
+        write_json_atomic(latest_path, payload)
+        print('notion page created: %s' % notion_url)
+    except Exception as error:
+        print('notion page failed; telegram delivery will continue: %s' % error, file=sys.stderr)
     send_telegram(payload, telegram_bot_token, telegram_chat_id)
     print('daily report generated: %s channels, %s sampled logs, %s requests' % (
         len(results), sampled_log_count, request_count))
